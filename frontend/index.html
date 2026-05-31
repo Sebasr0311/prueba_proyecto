@@ -507,15 +507,15 @@
       </div>
     </div>
     <div style="display:flex;gap:16px;align-items:flex-start">
-      <div style="display:flex;flex-direction:column;gap:2px;min-width:160px;background:var(--card-bg,#fff);border:1px solid var(--border);border-radius:12px;padding:8px" class="res-side-tabs" id="res-dash-tabs">
-        <div class="tab side-tab active" role="tab" aria-selected="true" data-tab="res-tab-resumen" onclick="ResidenteDash.cambiarTab('res-tab-resumen')">Resumen</div>
-        <div class="tab side-tab" role="tab" aria-selected="false" data-tab="res-tab-perfil" onclick="ResidenteDash.cambiarTab('res-tab-perfil')">Editar Perfil</div>
-        <div class="tab side-tab" role="tab" aria-selected="false" data-tab="res-tab-apartamento" onclick="ResidenteDash.cambiarTab('res-tab-apartamento')">Mi Apartamento</div>
-        <div class="tab side-tab" role="tab" aria-selected="false" data-tab="res-tab-cuotas" onclick="ResidenteDash.cambiarTab('res-tab-cuotas')">Cuotas</div>
-        <div class="tab side-tab" role="tab" aria-selected="false" data-tab="res-tab-frecuentes" onclick="ResidenteDash.cambiarTab('res-tab-frecuentes')">Frecuentes</div>
-        <div class="tab side-tab" role="tab" aria-selected="false" data-tab="res-tab-buzon" onclick="ResidenteDash.cambiarTab('res-tab-buzon')" style="position:relative">Buz&oacute;n<span class="buz-badge hidden" id="buzon-badge">0</span></div>
-        <div class="tab side-tab" role="tab" aria-selected="false" data-tab="res-tab-nueva-visita" onclick="ResidenteDash.cambiarTab('res-tab-nueva-visita')">Nueva Visita</div>
-        <div class="tab side-tab" role="tab" aria-selected="false" data-tab="res-tab-quejas" onclick="ResidenteDash.cambiarTab('res-tab-quejas')">Solicitudes</div>
+      <div class="res-sidebar" id="res-dash-tabs">
+        <div class="sidebar-item active" data-tab="res-tab-resumen" onclick="ResidenteDash.cambiarTab('res-tab-resumen')"><span class="material-symbols-outlined">dashboard</span><span class="sidebar-item-label">Resumen</span></div>
+        <div class="sidebar-item" data-tab="res-tab-perfil" onclick="ResidenteDash.cambiarTab('res-tab-perfil')"><span class="material-symbols-outlined">person</span><span class="sidebar-item-label">Editar Perfil</span></div>
+        <div class="sidebar-item" data-tab="res-tab-apartamento" onclick="ResidenteDash.cambiarTab('res-tab-apartamento')"><span class="material-symbols-outlined">apartment</span><span class="sidebar-item-label">Mi Apartamento</span></div>
+        <div class="sidebar-item" data-tab="res-tab-cuotas" onclick="ResidenteDash.cambiarTab('res-tab-cuotas')"><span class="material-symbols-outlined">payments</span><span class="sidebar-item-label">Cuotas</span></div>
+        <div class="sidebar-item" data-tab="res-tab-frecuentes" onclick="ResidenteDash.cambiarTab('res-tab-frecuentes')"><span class="material-symbols-outlined">group</span><span class="sidebar-item-label">Frecuentes</span></div>
+        <div class="sidebar-item" data-tab="res-tab-buzon" onclick="ResidenteDash.cambiarTab('res-tab-buzon')"><span class="material-symbols-outlined">mail</span><span class="sidebar-item-label">Buz\u00f3n<span class="buz-badge hidden" id="buzon-badge">0</span></span></div>
+        <div class="sidebar-item" data-tab="res-tab-nueva-visita" onclick="ResidenteDash.cambiarTab('res-tab-nueva-visita')"><span class="material-symbols-outlined">person_add</span><span class="sidebar-item-label">Nueva Visita</span></div>
+        <div class="sidebar-item" data-tab="res-tab-quejas" onclick="ResidenteDash.cambiarTab('res-tab-quejas')"><span class="material-symbols-outlined">feedback</span><span class="sidebar-item-label">Solicitudes</span></div>
       </div>
       <div style="flex:1;min-width:0">
         <div class="tab-content active" id="res-tab-resumen" role="tabpanel"></div>

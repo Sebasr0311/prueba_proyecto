@@ -68,10 +68,10 @@ const ResidenteDash = (() => {
   function setText(id, v) { var el = $(id); if (el) el.textContent = (v != null ? v : '-'); }
 
   function cambiarTab(tabId) {
-    document.querySelectorAll('#res-dash-tabs .tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('#res-dash-tabs .sidebar-item').forEach(function(t) { t.classList.remove('active'); });
     var resContainer = document.getElementById('res-dash-tabs').parentElement;
     resContainer.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
-    var tab = document.querySelector('#res-dash-tabs .tab[data-tab="' + tabId.replace(/["\\]/g, '') + '"]');
+    var tab = document.querySelector('#res-dash-tabs .sidebar-item[data-tab="' + tabId.replace(/["\\]/g, '') + '"]');
     if (tab) tab.classList.add('active');
     var content = $(tabId);
     if (content) content.classList.add('active');

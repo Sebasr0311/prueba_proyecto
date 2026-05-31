@@ -1617,6 +1617,41 @@ textarea:focus:not(:focus-visible) { outline: none; }
   .res-side-tabs + div { width: 100%; }
 }
 
+/* ── Residente Sidebar ──────────────────────────────────────────── */
+.res-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 200px;
+  background: var(--card-bg, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  padding: 8px;
+  flex-shrink: 0;
+}
+.res-sidebar .sidebar-item {
+  padding: 0 12px;
+  color: var(--text-secondary, #6b7280);
+  border-radius: 8px;
+  height: 40px;
+  font-size: 13.5px;
+}
+.res-sidebar .sidebar-item:hover {
+  background: var(--surface-hover, #f3f4f6);
+  color: var(--text, #111827);
+}
+.res-sidebar .sidebar-item.active {
+  background: var(--primary-container, #e0f2fe);
+  color: var(--primary, #2563eb);
+}
+.res-sidebar .sidebar-item .material-symbols-outlined {
+  font-size: 20px;
+}
+@media (max-width: 700px) {
+  .res-sidebar { min-width: 48px; }
+  .res-sidebar .sidebar-item .sidebar-item-label { display: none; }
+}
+
 /* ── Dashboard v4 responsive ──────────────────────────────────────── */
 @media (max-width: 900px) {
   /* Stats: 2 cols on tablet */
