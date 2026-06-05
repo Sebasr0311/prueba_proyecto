@@ -8,54 +8,83 @@ public class CheckAtp {
         try (Connection c = ConexionBD.getInstancia().getConexion();
              Statement st = c.createStatement()) {
 
-            // 1. Timezone info
+            // Buggy active QRs (exp-gen > 2 hours = SYSTIMESTAMP bug)
+            System.out.println("=== QRs activos bugueados (usado=0, exp-gen > 2h) ===");
             try (ResultSet rs = st.executeQuery(
-                "SELECT SESSIONTIMEZONE, DBTIMEZONE, SYSTIMESTAMP, CURRENT_TIMESTAMP FROM DUAL")) {
-                rs.next();
-                System.out.println("SESSIONTIMEZONE=" + rs.getString(1));
-                System.out.println("DBTIMEZONE=" + rs.getString(2));
-                System.out.println("SYSTIMESTAMP=" + rs.getTimestamp(3));
-                System.out.println("CURRENT_TIMESTAMP=" + rs.getTimestamp(4));
-            }
-
-            // 2. SP_LIBERAR_VISITA_FRECUENTE source (lines with TIMESTAMP/INSERT)
-            System.out.println("\n--- SP_LIBERAR_VISITA_FRECUENTE (TIMESTAMP/INSERT) ---");
-            try (ResultSet rs = st.executeQuery(
-                "SELECT LINE, TEXT FROM USER_SOURCE WHERE NAME='SP_LIBERAR_VISITA_FRECUENTE' AND TYPE='PROCEDURE' ORDER BY LINE")) {
+                    "SELECT q.id_qr, q.fecha_generacion, q.fecha_expiracion, q.usado, " +
+                    "       ROUND((CAST(q.fecha_expiracion AS DATE) - CAST(q.fecha_generacion AS DATE)) * 1440, 0) AS diff_min, " +
+                "       v.id_visita, vt.nombres||' '||vt.apellidos AS visitante " +
+                "FROM   QR_ACCESOS q " +
+                "JOIN   VISITAS v ON q.id_visita = v.id_visita " +
+                "JOIN   REGISTRO_VISITA rv ON v.id_visita = rv.id_visita AND rv.es_titular = 1 " +
+                "JOIN   VISITANTES vt ON rv.id_visitante = vt.id_visitante " +
+                "WHERE  q.usado = 0 " +
+                    "  AND (CAST(q.fecha_expiracion AS DATE) - CAST(q.fecha_generacion AS DATE)) * 1440 > 120 " +
+                "ORDER BY q.id_qr")) {
+                boolean found = false;
                 while (rs.next()) {
-                    String t = rs.getString("TEXT");
-                    if (t.toUpperCase().contains("TIMESTAMP") || t.toUpperCase().contains("INSERT"))
-                        System.out.println("L" + rs.getInt("LINE") + ": " + t);
-                }
-            }
-
-            // 3. SP_GENERAR_QR_VISITA source
-            System.out.println("\n--- SP_GENERAR_QR_VISITA (TIMESTAMP/INSERT) ---");
-            try (ResultSet rs = st.executeQuery(
-                "SELECT LINE, TEXT FROM USER_SOURCE WHERE NAME='SP_GENERAR_QR_VISITA' AND TYPE='PROCEDURE' ORDER BY LINE")) {
-                while (rs.next()) {
-                    String t = rs.getString("TEXT");
-                    if (t.toUpperCase().contains("TIMESTAMP") || t.toUpperCase().contains("INSERT"))
-                        System.out.println("L" + rs.getInt("LINE") + ": " + t);
-                }
-            }
-
-            // 4. Last 10 QRs
-            System.out.println("\n--- Ultimos 10 QRs ---");
-            try (ResultSet rs = st.executeQuery(
-                "SELECT id_qr, fecha_generacion, fecha_expiracion, usado FROM QR_ACCESOS ORDER BY id_qr DESC FETCH FIRST 10 ROWS ONLY")) {
-                while (rs.next()) {
-                    System.out.println("id=" + rs.getInt("id_qr")
+                    found = true;
+                    System.out.println("QR id=" + rs.getInt("id_qr")
                         + " gen=" + rs.getTimestamp("fecha_generacion")
                         + " exp=" + rs.getTimestamp("fecha_expiracion")
-                        + " usado=" + rs.getInt("usado"));
+                        + " diff_min=" + rs.getBigDecimal("diff_min")
+                        + " visita=" + rs.getInt("id_visita")
+                        + " visitante=" + rs.getString("visitante"));
                 }
+                if (!found) System.out.println("(ninguno)");
             }
 
-            // 5. DEFAULT on fecha_generacion
+            // Roberto Castillo Medina
+            System.out.println("\n=== Buscar Roberto Castillo Medina ===");
             try (ResultSet rs = st.executeQuery(
-                "SELECT DATA_DEFAULT FROM USER_TAB_COLUMNS WHERE TABLE_NAME='QR_ACCESOS' AND COLUMN_NAME='FECHA_GENERACION'")) {
-                if (rs.next()) System.out.println("\nDEFAULT fecha_generacion: " + rs.getString("DATA_DEFAULT"));
+                "SELECT v.id_visita, v.estado, v.fecha_registro, " +
+                "       r.id_residente, r.nombres||' '||r.apellidos AS residente, " +
+                "       a.numero AS apto, " +
+                "       vt.id_visitante, vt.numero_documento, vt.nombres||' '||vt.apellidos AS visitante " +
+                "FROM   VISITAS v " +
+                "JOIN   RESIDENTES r ON v.id_residente = r.id_residente " +
+                "JOIN   CONTRATO_RESIDENTE cr ON v.id_contrato_res = cr.id_contrato_res " +
+                "JOIN   CONTRATOS c ON cr.id_contrato = c.id_contrato " +
+                "JOIN   APARTAMENTOS a ON c.id_apartamento = a.id_apartamento " +
+                "JOIN   REGISTRO_VISITA rv ON v.id_visita = rv.id_visita AND rv.es_titular = 1 " +
+                "JOIN   VISITANTES vt ON rv.id_visitante = vt.id_visitante " +
+                "WHERE  vt.numero_documento = '20000002' " +
+                "ORDER BY v.id_visita DESC")) {
+                boolean found = false;
+                while (rs.next()) {
+                    found = true;
+                    System.out.println("Visita id=" + rs.getInt("id_visita")
+                        + " estado=" + rs.getString("estado")
+                        + " fecha=" + rs.getTimestamp("fecha_registro")
+                        + " residente=" + rs.getString("residente")
+                        + " apto=" + rs.getString("apto")
+                        + " visitante=" + rs.getString("visitante")
+                        + " doc=" + rs.getString("numero_documento"));
+                    
+                    // Check for registro de acceso (entry)
+                    int idVisita = rs.getInt("id_visita");
+                    try (Statement st2 = c.createStatement();
+                         ResultSet rs2 = st2.executeQuery(
+                            "SELECT id_acceso, hora_entrada, hora_salida FROM REGISTROS_ACCESO WHERE id_visita = " + idVisita)) {
+                        while (rs2.next()) {
+                            System.out.println("  Acceso: id=" + rs2.getInt("id_acceso")
+                                + " entrada=" + rs2.getTimestamp("hora_entrada")
+                                + " salida=" + rs2.getTimestamp("hora_salida"));
+                        }
+                    }
+                    // Check QR
+                    try (Statement st3 = c.createStatement();
+                         ResultSet rs3 = st3.executeQuery(
+                            "SELECT id_qr, codigo_qr, fecha_generacion, fecha_expiracion, usado FROM QR_ACCESOS WHERE id_visita = " + idVisita)) {
+                        while (rs3.next()) {
+                            System.out.println("  QR: id=" + rs3.getInt("id_qr")
+                                + " gen=" + rs3.getTimestamp("fecha_generacion")
+                                + " exp=" + rs3.getTimestamp("fecha_expiracion")
+                                + " usado=" + rs3.getInt("usado"));
+                        }
+                    }
+                }
+                if (!found) System.out.println("(no encontrado)");
             }
         }
     }
